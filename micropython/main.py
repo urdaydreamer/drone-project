@@ -2,19 +2,16 @@ import machine
 import time
 import adafruit_tcs34725
 from mx1508 import MX1508
+from tcs34725_cmyk import TCS34725_CMYK
 
-# настройки I2C
-i2c = machine.I2C(scl=machine.Pin(22), sda=machine.Pin(21)) #Это рандомные пины, поставить те, что будут использваоться
+# создаем объект датчика TCS34725 в формате CMYK
+color_recognition = TCS34725_CMYK(scl_pin=22, sda_pin=21)   #Использовать другие пины
 
-# создаем объект датчика TCS34725
-color_sensor = adafruit_tcs34725.TCS34725(i2c)
-
-# настройки датчика
-color_sensor.integration_time = adafruit_tcs34725.INTEGRATION_TIME_50MS
-color_sensor.gain = adafruit_tcs34725.GAIN_4X
-
-# цикл чтения цветов
+# чтение цветов и вывод значений CMYK
 while True:
-    r, g, b = sensor.color_rgb_bytes
-    print("Red: {}, Green: {}, Blue: {}".format(r, g, b))
+    c, m, y, k = color_recognition.read_color()
+    print("Cyan: {:.2f}, Magenta: {:.2f}, Yellow: {:.2f}, Black: {:.2f}".format(c, m, y, k))
     time.sleep(0.5)
+
+
+

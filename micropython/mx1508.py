@@ -1,81 +1,35 @@
+
 from machine import Pin, PWM
 
-class MX1508:
-    def __init__(self, pin_in1, pin_in2, pin_in3, pin_in4):
-        self.pin_in1 = Pin(pin_in1, Pin.OUT)
-        self.pin_in2 = Pin(pin_in2, Pin.OUT)
-        self.pin_in3 = Pin(pin_in3, Pin.OUT)
-        self.pin_in4 = Pin(pin_in4, Pin.OUT)
-        self.pwm_a = PWM(self.pin_in1, freq=1000, duty=0)
-        self.pwm_b = PWM(self.pin_in2, freq=1000, duty=0)
-        self.pwm_c = PWM(self.pin_in3, freq=1000, duty=0)
-        self.pwm_d = PWM(self.pin_in4, freq=1000, duty=0)
-        self.direction = None
-        self.speed = 0
+class MX1508(object):
+
+    def __init__(self, in1, in2, freq=1000):
+        self.freq = freq
+        self.sp = 0
+        self.p_in1 = PWM(Pin(in1, Pin.OUT), freq=self.freq, duty=self.sp)
+        self.p_in2 = PWM(Pin(in2, Pin.OUT), freq=self.freq, duty=self.sp)
+        self.p_in1.duty(0)
+        self.p_in2.duty(0)
 
     def stop(self):
-        self.pwm_a.duty(0)
-        self.pwm_b.duty(0)
-        self.pwm_c.duty(0)
-        self.pwm_d.duty(0)
-        self.direction = None
-        self.speed = 0
+        self.p_in1.duty(0)
+        self.p_in2.duty(0)
 
-    def set_speed(self, speed):
-        if speed > 0:
-            self.pwm_a.duty(speed)
-            self.pwm_b.duty(0)
-            self.pwm_c.duty(speed)
-            self.pwm_d.duty(0)
-            self.direction = "forward"
-            self.speed = speed
-        elif speed < 0:
-            self.pwm_a.duty(0)
-            self.pwm_b.duty(abs(speed))
-            self.pwm_c.duty(0)
-            self.pwm_d.duty(abs(speed))
-            self.direction = "backward"
-            self.speed = abs(speed)
+    def forward(self,s=None):
+        if s is not None:
+            self.sp = min(1023, max(0, s))
+        self.p_in2.duty(0)
+        self.p_in1.duty(self.sp)
+
+    def reverse(self,s=None):
+        if s is not None:
+            self.sp = min(1023, max(0, s))
+        self.p_in1.duty(0)
+        self.p_in2.duty(self.sp)
+        
+    def speed(self, s=None):
+        if s is None:
+            return self.sp
         else:
-            self.stop()
-
-    def turn_left(self, speed):
-        self.pwm_a.duty(0)
-        self.pwm_b.duty(speed)
-        self.pwm_c.duty(speed)
-        self.pwm_d.duty(0)
-        self.direction = "left"
-        self.speed = speed
-
-    def turn_right(self, speed):
-        self.pwm_a.duty(speed)
-        self.pwm_b.duty(0)
-        self.pwm_c.duty(0)
-        self.pwm_d.duty(speed)
-        self.direction = "right"
-        self.speed = speed
-
-    def go_forward(self, speed):
-        self.set_speed(speed)
-        self.direction = "forward"
-
-    def go_backward(self, speed):
-        self.set_speed(-speed)
-        self.direction = "backward"
-
-
-        #Example:
-# создание экземпляра моторного драйвера
-#motor = MX1508(IN1_PIN, IN2_PIN, IN3_PIN, IN4_PIN)
-
-# движение вперед со скоростью 50
-#motor.go_forward(50)
-
-# поворот налево со скоростью 30
-#motor.turn_left(30)
-
-# движение назад со скоростью 70
-#motor.go_backward(70)
-
-# остановка моторов
-#motor.stop()
+            self.sp = min(1023, max(0, s))
+        
